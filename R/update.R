@@ -60,7 +60,7 @@ influx_get_last_time <- function(measurement,
 #' @param verbose Print progress messages.
 #' @return A tibble of newly downloaded data.
 #' @export
-influx_update <- function(measurements,
+influx_get_update <- function(measurements,
                           config = influx_config(),
                           from = c("files", "data"),
                           data = NULL,

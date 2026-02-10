@@ -1,6 +1,6 @@
 #' Read cached InfluxDB data from compressed CSV files
 #'
-#' Reads `.csv.gz` files saved by [influx_get_range()] or [influx_update()],
+#' Reads `.csv.gz` files saved by [influx_get_range()] or [influx_get_update()],
 #' optionally filtering by measurement name and time range.
 #'
 #' @param measurements Character vector of measurement names to read.

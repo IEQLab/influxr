@@ -28,6 +28,6 @@ If \code{NULL}, reads all available files.}
 A tibble of cached data.
 }
 \description{
-Reads \code{.csv.gz} files saved by \code{\link[=influx_get_range]{influx_get_range()}} or \code{\link[=influx_update]{influx_update()}},
+Reads \code{.csv.gz} files saved by \code{\link[=influx_get_range]{influx_get_range()}} or \code{\link[=influx_get_update]{influx_get_update()}},
 optionally filtering by measurement name and time range.
 }
