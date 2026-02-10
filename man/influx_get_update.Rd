@@ -11,6 +11,7 @@ influx_get_update(
   data = NULL,
   end = NULL,
   bucket = "dp23",
+  tags = NULL,
   tz = "Australia/Sydney",
   default_start = "2023-12-01",
   chunk_by = "month",
@@ -31,6 +32,11 @@ influx_get_update(
 \item{end}{End time for the update (default: now).}
 
 \item{bucket}{InfluxDB bucket name.}
+
+\item{tags}{Optional named list of tag filters. Names are tag keys, values
+are character vectors of allowed values. Multiple values for a single tag
+are OR'd; separate tags are AND'd via separate filter steps.
+E.g. \code{list(source = "house_1", room = c("bedroom", "kitchen"))}.}
 
 \item{tz}{Timezone.}
 

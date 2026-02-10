@@ -10,6 +10,7 @@ influx_get_range(
   end,
   config = influx_config(),
   bucket = "dp23",
+  tags = NULL,
   tz = "Australia/Sydney",
   chunk_by = "month",
   save_files = FALSE,
@@ -27,6 +28,11 @@ influx_get_range(
 \item{config}{Connection config from \code{\link[=influx_config]{influx_config()}}.}
 
 \item{bucket}{InfluxDB bucket name.}
+
+\item{tags}{Optional named list of tag filters. Names are tag keys, values
+are character vectors of allowed values. Multiple values for a single tag
+are OR'd; separate tags are AND'd via separate filter steps.
+E.g. \code{list(source = "house_1", room = c("bedroom", "kitchen"))}.}
 
 \item{tz}{Timezone for queries and returned data.}
 

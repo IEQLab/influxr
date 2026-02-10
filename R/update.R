@@ -52,6 +52,10 @@ influx_get_last_time <- function(measurement,
 #' @param data An existing tibble when `from = "data"`.
 #' @param end End time for the update (default: now).
 #' @param bucket InfluxDB bucket name.
+#' @param tags Optional named list of tag filters. Names are tag keys, values
+#'   are character vectors of allowed values. Multiple values for a single tag
+#'   are OR'd; separate tags are AND'd via separate filter steps.
+#'   E.g. `list(source = "house_1", room = c("bedroom", "kitchen"))`.
 #' @param tz Timezone.
 #' @param default_start Fallback start date when no existing data is found.
 #' @param chunk_by Chunking interval.
@@ -66,6 +70,7 @@ influx_get_update <- function(measurements,
                           data = NULL,
                           end = NULL,
                           bucket = "dp23",
+                          tags = NULL,
                           tz = "Australia/Sydney",
                           default_start = "2023-12-01",
                           chunk_by = "month",
@@ -118,6 +123,7 @@ influx_get_update <- function(measurements,
       end = end,
       config = config,
       bucket = bucket,
+      tags = tags,
       tz = tz,
       chunk_by = chunk_by,
       save_files = save_files,

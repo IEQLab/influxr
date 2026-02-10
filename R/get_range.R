@@ -9,6 +9,10 @@
 #' @param end End time (anything accepted by [influx_parse_time()]).
 #' @param config Connection config from [influx_config()].
 #' @param bucket InfluxDB bucket name.
+#' @param tags Optional named list of tag filters. Names are tag keys, values
+#'   are character vectors of allowed values. Multiple values for a single tag
+#'   are OR'd; separate tags are AND'd via separate filter steps.
+#'   E.g. `list(source = "house_1", room = c("bedroom", "kitchen"))`.
 #' @param tz Timezone for queries and returned data.
 #' @param chunk_by Chunking interval passed to [influx_chunk_range()].
 #' @param save_files If `TRUE`, save each chunk to a `.csv.gz` file.
@@ -18,7 +22,8 @@
 #' @export
 influx_get_range <- function(measurements, start, end,
                              config = influx_config(),
-                             bucket = "dp23",
+                             bucket = NULL,
+                             tags = NULL,
                              tz = "Australia/Sydney",
                              chunk_by = "month",
                              save_files = FALSE,
@@ -26,7 +31,7 @@ influx_get_range <- function(measurements, start, end,
                              verbose = TRUE) {
   chunks <- influx_chunk_range(start, end, chunk_by = chunk_by, tz = tz)
 
-  if (save_files && !dir.exists(output_dir)) {
+  if (!dir.exists(output_dir)) {
     dir.create(output_dir, recursive = TRUE)
   }
 
@@ -46,7 +51,8 @@ influx_get_range <- function(measurements, start, end,
         measurement = meas,
         start_utc = chunk$start_utc,
         end_utc = chunk$end_utc,
-        bucket = bucket
+        bucket = bucket,
+        tags = tags
       )
 
       df <- influx_query(query, config = config, tz = tz)

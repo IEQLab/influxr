@@ -9,7 +9,8 @@ influx_build_query(
   start_utc,
   end_utc,
   bucket = "dp23",
-  fields = c("value", "temperature", "humidity")
+  fields = c("value", "temperature", "humidity"),
+  tags = NULL
 )
 }
 \arguments{
@@ -22,10 +23,22 @@ influx_build_query(
 \item{bucket}{InfluxDB bucket name.}
 
 \item{fields}{Character vector of field names to filter.}
+
+\item{tags}{Optional named list of tag filters. Names are tag keys, values
+are character vectors of allowed values. Multiple values for a single tag
+are OR'd; separate tags are AND'd via separate filter steps.
+E.g. \code{list(source = "house_1", room = c("bedroom", "kitchen"))}.}
 }
 \value{
 A single Flux query string.
 }
 \description{
-Constructs a Flux query that filters by measurement and time range.
+Constructs a Flux query that filters by measurement and time range,
+with optional tag filtering.
+}
+\examples{
+influx_build_query("temperature", "2024-01-01T00:00:00Z",
+  "2024-02-01T00:00:00Z",
+  tags = list(source = "house_1", room = c("bedroom", "kitchen"))
+)
 }

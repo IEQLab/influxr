@@ -1,31 +1,76 @@
 #' Build a Flux query string
 #'
-#' Constructs a Flux query that filters by measurement and time range.
+#' Constructs a Flux query that filters by measurement and time range,
+#' with optional tag filtering.
 #'
 #' @param measurement Measurement name (e.g. `"tvoc"`).
 #' @param start_utc Start time as UTC ISO8601 string.
 #' @param end_utc End time as UTC ISO8601 string.
 #' @param bucket InfluxDB bucket name.
 #' @param fields Character vector of field names to filter.
+#' @param tags Optional named list of tag filters. Names are tag keys, values
+#'   are character vectors of allowed values. Multiple values for a single tag
+#'   are OR'd; separate tags are AND'd via separate filter steps.
+#'   E.g. `list(source = "house_1", room = c("bedroom", "kitchen"))`.
 #' @return A single Flux query string.
+#' @examples
+#' influx_build_query("temperature", "2024-01-01T00:00:00Z",
+#'   "2024-02-01T00:00:00Z",
+#'   tags = list(source = "house_1", room = c("bedroom", "kitchen"))
+#' )
 #' @export
 influx_build_query <- function(measurement, start_utc, end_utc,
                                bucket = "dp23",
-                               fields = c("value", "temperature", "humidity")) {
+                               fields = c("value", "temperature", "humidity"),
+                               tags = NULL) {
   field_filter <- paste0(
     sprintf('r._field == "%s"', fields),
     collapse = " or "
   )
 
-  query <- glue::glue(
-    'from(bucket: "{bucket}")',
-    ' |> range(start: {start_utc}, stop: {end_utc})',
-    ' |> filter(fn: (r) => {field_filter})',
-    ' |> filter(fn: (r) => r._measurement == "{measurement}")',
-    ' |> keep(columns: ["_time","source", "_measurement", "_field", "entity_id", "_value"])'
+  tag_lines <- build_tag_filters(tags)
+
+  keep_cols <- c("_time", "source", "_measurement", "_field", "entity_id", "_value")
+  if (!is.null(tags)) {
+    keep_cols <- union(keep_cols, names(tags))
+  }
+  keep_str <- paste0('"', keep_cols, '"', collapse = ", ")
+
+  query <- paste0(
+    glue::glue(
+      'from(bucket: "{bucket}")',
+      ' |> range(start: {start_utc}, stop: {end_utc})',
+      ' |> filter(fn: (r) => {field_filter})',
+      ' |> filter(fn: (r) => r._measurement == "{measurement}")'
+    ),
+    tag_lines,
+    glue::glue(' |> keep(columns: [{keep_str}])')
   )
 
   as.character(query)
+}
+
+
+#' Build Flux filter lines for tag filtering
+#'
+#' @param tags Named list of tag filters, or `NULL`.
+#' @return A string of Flux filter lines (empty string if no tags).
+#' @noRd
+build_tag_filters <- function(tags) {
+  if (is.null(tags) || length(tags) == 0) {
+    return("")
+  }
+
+  lines <- vapply(names(tags), function(key) {
+    vals <- tags[[key]]
+    condition <- paste0(
+      sprintf('r["%s"] == "%s"', key, vals),
+      collapse = " or "
+    )
+    sprintf(' |> filter(fn: (r) => %s)', condition)
+  }, character(1))
+
+  paste0(lines, collapse = "")
 }
 
 
