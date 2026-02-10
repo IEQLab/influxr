@@ -8,6 +8,7 @@
 #' @param token InfluxDB API token.
 #' @param org InfluxDB organisation name.
 #' @return A named list with elements `url`, `token`, and `org`.
+#' @seealso [influx_set_env()] to set the environment variables interactively.
 #' @export
 influx_config <- function(url = Sys.getenv("INFLUXDB_URL"),
                           token = Sys.getenv("INFLUXDB_TOKEN"),

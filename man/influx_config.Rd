@@ -25,3 +25,6 @@ Reads connection details from environment variables or explicit arguments.
 Set \code{INFLUXDB_URL}, \code{INFLUXDB_TOKEN}, and \code{INFLUXDB_ORG} in your
 \code{.Renviron} file for persistent configuration.
 }
+\seealso{
+\code{\link[=influx_set_env]{influx_set_env()}} to set the environment variables interactively.
+}

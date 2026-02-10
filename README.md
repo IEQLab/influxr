@@ -1,14 +1,15 @@
 
-# influxr
+# Influxr
 
 <!-- badges: start -->
 <!-- badges: end -->
 
 The goal of influxr is to provide a simple interface for retrieving data from
-IEQ Lab InfluxDB v2 buckets. It replaces the archived `influxdbclient` CRAN
-package with direct HTTP calls via [httr2](https://httr2.r-lib.org/), and adds
-features for data science workflows including timezone handling, monthly query
-chunking, compressed file caching, and incremental dataset updates.
+InfluxDB v2 buckets. It was written for data workflows in the [IEQ Lab](https://www.sydney.edu.au/architecture/our-research/research-labs-and-facilities/indoor-environmental-quality-lab.html) 
+but can be generalised for any user. It replaces the archived `influxdbclient` 
+CRAN package with direct HTTP calls via [httr2](https://httr2.r-lib.org/), and 
+adds features for data science workflows including timezone handling, monthly 
+query chunking, compressed file caching, and incremental dataset updates.
 
 ## Installation
 
@@ -27,8 +28,21 @@ devtools::install_local("/path/to/influxr")
 
 ## Configuration
 
-influxr reads connection details from environment variables. Add these to your
-`.Renviron` file (use `usethis::edit_r_environ()` to open it):
+The easiest way to store your InfluxDB credentials is with `influx_set_env()`:
+
+``` r
+influx_set_env(
+  url   = "http://your-host:8086",
+  token = "your-api-token",
+  org   = "your-org"
+)
+```
+
+This writes the values to your `~/.Renviron` file and loads them in the current
+session. Call `influx_set_env()` with no arguments for interactive prompts.
+
+You can also edit `~/.Renviron` manually (use `usethis::edit_r_environ()` to
+open it):
 
 ```
 INFLUXDB_URL=http://your-host:8086
@@ -36,7 +50,7 @@ INFLUXDB_TOKEN=your-api-token
 INFLUXDB_ORG=your-org
 ```
 
-Or pass them explicitly:
+Or pass credentials explicitly:
 
 ``` r
 cfg <- influx_config(
@@ -72,6 +86,7 @@ cached <- influx_read_cached("tvoc", start = "2024-06-01")
 
 | Function | Purpose |
 |---|---|
+| `influx_set_env()` | Store InfluxDB credentials in `~/.Renviron` |
 | `influx_config()` | Create a connection configuration |
 | `influx_get_range()` | Download data for a time range, with optional file saving |
 | `influx_get_update()` | Incrementally download new data since the last fetch |
