@@ -1,0 +1,25 @@
+Package: influxr
+Title: Query InfluxDB v2 with Flexible Time Handling and Caching
+Version: 0.1.0
+Authors@R: person("Tom", "Parkinson", role = c("aut", "cre"),
+    email = "tom@example.com")
+Description: Retrieve data from InfluxDB v2 buckets using Flux queries via
+    httr2. Handles timezone conversion, monthly query chunking, compressed
+    file caching, and incremental dataset updates.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Imports:
+    httr2,
+    readr,
+    dplyr,
+    lubridate,
+    stringr,
+    glue,
+    purrr,
+    tibble
+Suggests:
+    testthat (>= 3.0.0),
+    withr
+Config/testthat/edition: 3
