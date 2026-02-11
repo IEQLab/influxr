@@ -8,8 +8,8 @@
 #' @param data A tibble to search when `source = "data"`.
 #' @param data_dir Directory containing `.csv.gz` files.
 #' @param tz Timezone for the returned value.
-#' @return A POSIXct of the start of the next day (for files) or
-#'   max datetime + 1 second (for data), or `NULL` if no data found.
+#' @return A POSIXct of the max datetime + 1 second from the most recent
+#'   file (for files) or data, or `NULL` if no data found.
 #' @export
 influx_get_last_time <- function(measurement,
                                  source = c("files", "data"),
@@ -20,16 +20,17 @@ influx_get_last_time <- function(measurement,
 
   if (source == "files") {
     pattern <- paste0("^", measurement, "_.*\\.csv\\.gz$")
-    files <- list.files(data_dir, pattern = pattern, full.names = FALSE)
+    files <- list.files(data_dir, pattern = pattern, full.names = TRUE)
 
     if (length(files) == 0) return(NULL)
 
-    # Extract dates from filenames: measurement_YYYY-MM-DD.csv.gz
-    dates <- stringr::str_extract(files, "\\d{4}-\\d{2}-\\d{2}")
-    max_date <- max(as.Date(dates))
+    # Read the most recent file and find the actual last timestamp
+    latest_file <- files[which.max(file.mtime(files))]
+    df <- readr::read_csv(latest_file, show_col_types = FALSE)
 
-    # Return start of next day
-    lubridate::force_tz(as.POSIXct(max_date + 1), tzone = tz)
+    if (nrow(df) == 0 || !"datetime" %in% names(df)) return(NULL)
+
+    max(df$datetime) + lubridate::seconds(1)
   } else {
     if (is.null(data) || nrow(data) == 0) return(NULL)
 
