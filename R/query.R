@@ -106,18 +106,18 @@ influx_query <- function(query, config = influx_config(),
   }
 
   # Parse CSV, dropping annotation lines starting with #
-  df <- readr::read_csv(
+  df <- suppressMessages(readr::read_csv(
     I(resp_text),
     comment = "#",
     show_col_types = FALSE
-  )
+  ))
 
   if (nrow(df) == 0) {
     return(empty_result(tz))
   }
 
   # Drop InfluxDB metadata columns
-  drop_cols <- intersect(names(df), c("", "result", "table", "_start", "_stop"))
+  drop_cols <- intersect(names(df), c("", "result", "table", "_start", "_stop", "_field"))
   drop_cols <- c(drop_cols, grep("^\\.{3}\\d+$", names(df), value = TRUE))
   df <- dplyr::select(df, !dplyr::any_of(drop_cols))
 
@@ -127,8 +127,7 @@ influx_query <- function(query, config = influx_config(),
     house      = "source",
     parameter  = "_measurement",
     device     = "entity_id",
-    value      = "_value",
-    value_type = "_field"
+    value      = "_value"
   )
   df <- dplyr::rename(df, dplyr::any_of(col_map))
 
@@ -150,7 +149,6 @@ empty_result <- function(tz) {
   tibble::tibble(
     datetime   = as.POSIXct(character(), tz = tz),
     parameter  = character(),
-    value      = numeric(),
-    value_type = character()
+    value      = numeric()
   )
 }
