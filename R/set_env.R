@@ -17,7 +17,7 @@
 #' @export
 influx_set_env <- function(url = NULL, token = NULL, org = NULL,
                            renviron_path = file.path(Sys.getenv("HOME"), ".Renviron")) {
-  if (is.null(url))   url   <- prompt_or_stop("INFLUXDB_URL",   "InfluxDB URL (e.g. http://host:443)")
+  if (is.null(url))   url   <- prompt_or_stop("INFLUXDB_URL",   "InfluxDB URL (e.g. https://host:443)")
   if (is.null(token)) token <- prompt_or_stop("INFLUXDB_TOKEN", "InfluxDB API token")
   if (is.null(org))   org   <- prompt_or_stop("INFLUXDB_ORG",   "InfluxDB organisation")
 
