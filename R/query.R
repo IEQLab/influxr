@@ -95,6 +95,7 @@ influx_query <- function(query, config = influx_config(),
       Accept = "application/csv"
     ) |>
     httr2::req_body_raw(query, type = "application/vnd.flux") |>
+    httr2::req_error(body = function(resp) httr2::resp_body_string(resp)) |>
     httr2::req_perform()
 
   resp_text <- httr2::resp_body_string(resp)
