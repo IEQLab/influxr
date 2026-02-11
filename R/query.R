@@ -7,7 +7,8 @@
 #' @param start_utc Start time as UTC ISO8601 string.
 #' @param end_utc End time as UTC ISO8601 string.
 #' @param bucket InfluxDB bucket name.
-#' @param fields Character vector of field names to filter.
+#' @param fields Character vector of field names to filter, or `NULL` (default)
+#'   to return all fields.
 #' @param tags Optional named list of tag filters. Names are tag keys, values
 #'   are character vectors of allowed values. Multiple values for a single tag
 #'   are OR'd; separate tags are AND'd via separate filter steps.
@@ -21,12 +22,16 @@
 #' @export
 influx_build_query <- function(measurement, start_utc, end_utc,
                                bucket = "dp23",
-                               fields = c("value", "temperature", "humidity"),
+                               fields = NULL,
                                tags = NULL) {
-  field_filter <- paste0(
-    sprintf('r._field == "%s"', fields),
-    collapse = " or "
-  )
+  field_line <- ""
+  if (!is.null(fields)) {
+    field_filter <- paste0(
+      sprintf('r._field == "%s"', fields),
+      collapse = " or "
+    )
+    field_line <- glue::glue(' |> filter(fn: (r) => {field_filter})')
+  }
 
   tag_lines <- build_tag_filters(tags)
 
@@ -39,10 +44,10 @@ influx_build_query <- function(measurement, start_utc, end_utc,
   query <- paste0(
     glue::glue(
       'from(bucket: "{bucket}")',
-      ' |> range(start: {start_utc}, stop: {end_utc})',
-      ' |> filter(fn: (r) => {field_filter})',
-      ' |> filter(fn: (r) => r._measurement == "{measurement}")'
+      ' |> range(start: {start_utc}, stop: {end_utc})'
     ),
+    field_line,
+    glue::glue(' |> filter(fn: (r) => r._measurement == "{measurement}")'),
     tag_lines,
     glue::glue(' |> keep(columns: [{keep_str}])')
   )

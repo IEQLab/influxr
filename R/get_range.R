@@ -23,6 +23,7 @@
 influx_get_range <- function(measurements, start, end,
                              config = influx_config(),
                              bucket = NULL,
+                             fields = NULL,
                              tags = NULL,
                              tz = "Australia/Sydney",
                              chunk_by = "month",
@@ -52,6 +53,7 @@ influx_get_range <- function(measurements, start, end,
         start_utc = chunk$start_utc,
         end_utc = chunk$end_utc,
         bucket = bucket,
+        fields = fields,
         tags = tags
       )
 

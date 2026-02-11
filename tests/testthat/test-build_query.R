@@ -5,6 +5,17 @@ test_that("influx_build_query without tags matches baseline output", {
   expect_match(q, 'keep\\(columns: \\[')
   # No tag filter lines
   expect_no_match(q, 'r\\["')
+  # No field filter when fields = NULL
+  expect_no_match(q, 'r._field')
+})
+
+test_that("fields filter is applied when fields are specified", {
+  q <- influx_build_query(
+    "temp", "2024-01-01T00:00:00Z", "2024-02-01T00:00:00Z",
+    fields = c("value", "temperature")
+  )
+
+  expect_match(q, 'r._field == "value" or r._field == "temperature"')
 })
 
 test_that("single tag with one value adds correct filter line", {
