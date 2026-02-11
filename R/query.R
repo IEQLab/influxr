@@ -30,7 +30,7 @@ influx_build_query <- function(measurement, start_utc, end_utc,
 
   tag_lines <- build_tag_filters(tags)
 
-  keep_cols <- c("_time", "source", "_measurement", "_field", "entity_id", "_value")
+  keep_cols <- c("_time", "_measurement", "_field", "_value")
   if (!is.null(tags)) {
     keep_cols <- union(keep_cols, names(tags))
   }
@@ -121,16 +121,16 @@ influx_query <- function(query, config = influx_config(),
   drop_cols <- intersect(names(df), c("", "result", "table"))
   df <- dplyr::select(df, !dplyr::any_of(drop_cols))
 
-  # Rename columns
-  df <- dplyr::rename(
-    df,
-    datetime = "_time",
-    house = "source",
-    parameter = "_measurement",
-    device = "entity_id",
-    value = "_value",
+  # Rename columns (any_of so missing columns are silently skipped)
+  col_map <- c(
+    datetime   = "_time",
+    house      = "source",
+    parameter  = "_measurement",
+    device     = "entity_id",
+    value      = "_value",
     value_type = "_field"
   )
+  df <- dplyr::rename(df, dplyr::any_of(col_map))
 
   # Convert datetime to local timezone
   df <- dplyr::mutate(
@@ -148,11 +148,9 @@ influx_query <- function(query, config = influx_config(),
 #' @noRd
 empty_result <- function(tz) {
   tibble::tibble(
-    datetime = as.POSIXct(character(), tz = tz),
-    house = character(),
-    parameter = character(),
-    device = character(),
-    value = numeric(),
+    datetime   = as.POSIXct(character(), tz = tz),
+    parameter  = character(),
+    value      = numeric(),
     value_type = character()
   )
 }

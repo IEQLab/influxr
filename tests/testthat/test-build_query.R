@@ -42,9 +42,9 @@ test_that("tag names appear in keep() columns", {
   )
 
   expect_match(q, '"room"')
-  # Existing columns still present
+  # Core columns still present
   expect_match(q, '"_time"')
-  expect_match(q, '"source"')
+  expect_match(q, '"_value"')
 })
 
 test_that("tags already in keep() are not duplicated", {
