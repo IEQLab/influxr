@@ -1,15 +1,23 @@
-test_that("influx_build_query without tags matches baseline output", {
+test_that("influx_build_query produces correct baseline output", {
   q <- influx_build_query("temp", "2024-01-01T00:00:00Z", "2024-02-01T00:00:00Z")
 
   expect_match(q, 'r._measurement == "temp"')
-  expect_match(q, 'keep\\(columns: \\[')
+  # Default field filter is "value"
+  expect_match(q, 'r._field == "value"')
   # No tag filter lines
   expect_no_match(q, 'r\\["')
-  # No field filter when fields = NULL
+})
+
+test_that("fields filter is skipped when fields = NULL", {
+  q <- influx_build_query(
+    "temp", "2024-01-01T00:00:00Z", "2024-02-01T00:00:00Z",
+    fields = NULL
+  )
+
   expect_no_match(q, 'r._field')
 })
 
-test_that("fields filter is applied when fields are specified", {
+test_that("multiple fields are OR'd", {
   q <- influx_build_query(
     "temp", "2024-01-01T00:00:00Z", "2024-02-01T00:00:00Z",
     fields = c("value", "temperature")
@@ -44,28 +52,4 @@ test_that("multiple tags produce separate filter lines", {
 
   expect_match(q, 'filter\\(fn: \\(r\\) => r\\["source"\\] == "house_1"\\)')
   expect_match(q, 'filter\\(fn: \\(r\\) => r\\["room"\\] == "bedroom"\\)')
-})
-
-test_that("tag names appear in keep() columns", {
-  q <- influx_build_query(
-    "temp", "2024-01-01T00:00:00Z", "2024-02-01T00:00:00Z",
-    tags = list(room = "bedroom")
-  )
-
-  expect_match(q, '"room"')
-  # Core columns still present
-  expect_match(q, '"_time"')
-  expect_match(q, '"_value"')
-})
-
-test_that("tags already in keep() are not duplicated", {
-  q <- influx_build_query(
-    "temp", "2024-01-01T00:00:00Z", "2024-02-01T00:00:00Z",
-    tags = list(source = "house_1")
-  )
-
-  # "source" should appear exactly once in the keep() columns
-  keep_match <- regmatches(q, regexpr("keep\\(columns: \\[[^]]+\\]\\)", q))
-  source_count <- lengths(regmatches(keep_match, gregexpr('"source"', keep_match)))
-  expect_equal(source_count, 1)
 })
