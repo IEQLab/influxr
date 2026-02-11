@@ -116,8 +116,9 @@ influx_query <- function(query, config = influx_config(),
     return(empty_result(tz))
   }
 
-  # Drop leading empty column and result/table columns
-  drop_cols <- intersect(names(df), c("", "result", "table"))
+  # Drop InfluxDB metadata columns
+  drop_cols <- intersect(names(df), c("", "result", "table", "_start", "_stop"))
+  drop_cols <- c(drop_cols, grep("^\\.{3}\\d+$", names(df), value = TRUE))
   df <- dplyr::select(df, !dplyr::any_of(drop_cols))
 
   # Rename columns (any_of so missing columns are silently skipped)
