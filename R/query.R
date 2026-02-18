@@ -163,22 +163,14 @@ influx_query <- function(query, config = influx_config(),
     )
   }
 
-  # Convert datetime to local timezone
-  tryCatch(
-    {
-      df <- dplyr::mutate(
-        df,
-        datetime = lubridate::with_tz(.data$datetime, tzone = tz)
-      )
-    },
-    error = function(e) {
-      stop(
-        "Failed to parse datetime column. ",
-        "This might indicate an InfluxDB error or malformed response.\n",
-        "First few datetime values: ",
-        paste(utils::head(df$datetime, 3), collapse = ", "),
-        "\nOriginal error: ", conditionMessage(e)
-      )
+  # Parse datetime column if it's character, then convert to local timezone
+  df <- dplyr::mutate(
+    df,
+    datetime = if (inherits(.data$datetime, "POSIXct")) {
+      lubridate::with_tz(.data$datetime, tzone = tz)
+    } else {
+      # Parse as ISO8601 UTC timestamp, then convert to target timezone
+      lubridate::with_tz(lubridate::ymd_hms(.data$datetime, tz = "UTC"), tzone = tz)
     }
   )
 
