@@ -53,3 +53,18 @@ test_that("multiple tags produce separate filter lines", {
   expect_match(q, 'filter\\(fn: \\(r\\) => r\\["source"\\] == "house_1"\\)')
   expect_match(q, 'filter\\(fn: \\(r\\) => r\\["room"\\] == "bedroom"\\)')
 })
+
+test_that("special characters in measurement names are escaped", {
+  q <- influx_build_query(
+    "°C", "2024-01-01T00:00:00Z", "2024-02-01T00:00:00Z"
+  )
+
+  # Special chars like ° should pass through, but quotes should be escaped
+  expect_match(q, 'r._measurement == "°C"')
+
+  # Test with quotes in measurement name
+  q2 <- influx_build_query(
+    'temp"test', "2024-01-01T00:00:00Z", "2024-02-01T00:00:00Z"
+  )
+  expect_match(q2, 'r._measurement == "temp\\\\"test"')
+})

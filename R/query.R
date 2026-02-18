@@ -1,3 +1,19 @@
+#' Escape a string for use in Flux query
+#'
+#' Escapes special characters for Flux string literals.
+#' @param x Character vector to escape.
+#' @return Escaped character vector.
+#' @noRd
+flux_escape <- function(x) {
+  x <- gsub("\\\\", "\\\\\\\\", x)  # Backslash -> \\
+  x <- gsub('"', '\\\\"', x)         # Quote -> \"
+  x <- gsub("\n", "\\\\n", x)        # Newline -> \n
+  x <- gsub("\r", "\\\\r", x)        # Carriage return -> \r
+  x <- gsub("\t", "\\\\t", x)        # Tab -> \t
+  x
+}
+
+
 #' Build a Flux query string
 #'
 #' Constructs a Flux query that filters by measurement and time range,
@@ -24,10 +40,15 @@ influx_build_query <- function(measurement, start_utc, end_utc,
                                bucket = "dp23",
                                fields = "value",
                                tags = NULL) {
+  # Escape all string values
+  bucket_esc <- flux_escape(bucket)
+  measurement_esc <- flux_escape(measurement)
+
   field_line <- ""
   if (!is.null(fields)) {
+    fields_esc <- flux_escape(fields)
     field_filter <- paste0(
-      sprintf('r._field == "%s"', fields),
+      sprintf('r._field == "%s"', fields_esc),
       collapse = " or "
     )
     field_line <- glue::glue(' |> filter(fn: (r) => {field_filter})')
@@ -37,11 +58,11 @@ influx_build_query <- function(measurement, start_utc, end_utc,
 
   query <- paste0(
     glue::glue(
-      'from(bucket: "{bucket}")',
+      'from(bucket: "{bucket_esc}")',
       ' |> range(start: {start_utc}, stop: {end_utc})'
     ),
     field_line,
-    glue::glue(' |> filter(fn: (r) => r._measurement == "{measurement}")'),
+    glue::glue(' |> filter(fn: (r) => r._measurement == "{measurement_esc}")'),
     tag_lines
   )
 
@@ -60,9 +81,11 @@ build_tag_filters <- function(tags) {
   }
 
   lines <- vapply(names(tags), function(key) {
+    key_esc <- flux_escape(key)
     vals <- tags[[key]]
+    vals_esc <- flux_escape(vals)
     condition <- paste0(
-      sprintf('r["%s"] == "%s"', key, vals),
+      sprintf('r["%s"] == "%s"', key_esc, vals_esc),
       collapse = " or "
     )
     sprintf(' |> filter(fn: (r) => %s)', condition)
@@ -131,10 +154,32 @@ influx_query <- function(query, config = influx_config(),
   )
   df <- dplyr::rename(df, dplyr::any_of(col_map))
 
+  # Check if datetime column exists after renaming
+  if (!"datetime" %in% names(df)) {
+    stop(
+      "Expected '_time' column not found in InfluxDB response.\n",
+      "Available columns: ", paste(names(df), collapse = ", "),
+      "\n\nThis might indicate a malformed query or InfluxDB error."
+    )
+  }
+
   # Convert datetime to local timezone
-  df <- dplyr::mutate(
-    df,
-    datetime = lubridate::with_tz(.data$datetime, tzone = tz)
+  tryCatch(
+    {
+      df <- dplyr::mutate(
+        df,
+        datetime = lubridate::with_tz(.data$datetime, tzone = tz)
+      )
+    },
+    error = function(e) {
+      stop(
+        "Failed to parse datetime column. ",
+        "This might indicate an InfluxDB error or malformed response.\n",
+        "First few datetime values: ",
+        paste(utils::head(df$datetime, 3), collapse = ", "),
+        "\nOriginal error: ", conditionMessage(e)
+      )
+    }
   )
 
   df
