@@ -53,6 +53,7 @@ influx_get_last_time <- function(measurement,
 #' @param data An existing tibble when `from = "data"`.
 #' @param end End time for the update (default: now).
 #' @param bucket InfluxDB bucket name.
+#' @param fields Optional character vector of field keys to filter on.
 #' @param tags Optional named list of tag filters. Names are tag keys, values
 #'   are character vectors of allowed values. Multiple values for a single tag
 #'   are OR'd; separate tags are AND'd via separate filter steps.
@@ -71,6 +72,7 @@ influx_get_update <- function(measurements,
                           data = NULL,
                           end = NULL,
                           bucket = "dp23",
+                          fields = NULL,
                           tags = NULL,
                           tz = "Australia/Sydney",
                           default_start = "2023-12-01",
@@ -124,6 +126,7 @@ influx_get_update <- function(measurements,
       end = end,
       config = config,
       bucket = bucket,
+      fields = fields,
       tags = tags,
       tz = tz,
       chunk_by = chunk_by,
