@@ -11,6 +11,7 @@ influx_get_update(
   data = NULL,
   end = NULL,
   bucket = "dp23",
+  fields = NULL,
   tags = NULL,
   tz = "Australia/Sydney",
   default_start = "2023-12-01",
@@ -32,6 +33,8 @@ influx_get_update(
 \item{end}{End time for the update (default: now).}
 
 \item{bucket}{InfluxDB bucket name.}
+
+\item{fields}{Optional character vector of field keys to filter on.}
 
 \item{tags}{Optional named list of tag filters. Names are tag keys, values
 are character vectors of allowed values. Multiple values for a single tag

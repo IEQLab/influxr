@@ -9,7 +9,8 @@ influx_get_range(
   start,
   end,
   config = influx_config(),
-  bucket = "dp23",
+  bucket = NULL,
+  fields = NULL,
   tags = NULL,
   tz = "Australia/Sydney",
   chunk_by = "month",
@@ -28,6 +29,9 @@ influx_get_range(
 \item{config}{Connection config from \code{\link[=influx_config]{influx_config()}}.}
 
 \item{bucket}{InfluxDB bucket name.}
+
+\item{fields}{Character vector of field names to filter, or \code{NULL}
+to return all fields. Defaults to \code{NULL}.}
 
 \item{tags}{Optional named list of tag filters. Names are tag keys, values
 are character vectors of allowed values. Multiple values for a single tag

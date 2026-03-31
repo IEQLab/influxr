@@ -34,7 +34,7 @@ influx_get_last_time <- function(measurement,
   } else {
     if (is.null(data) || nrow(data) == 0) return(NULL)
 
-    filtered <- dplyr::filter(data, .data$parameter == measurement)
+    filtered <- dplyr::filter(data, .data$measurement == measurement)
     if (nrow(filtered) == 0) return(NULL)
 
     max(filtered$datetime) + lubridate::seconds(1)

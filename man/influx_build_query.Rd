@@ -9,7 +9,7 @@ influx_build_query(
   start_utc,
   end_utc,
   bucket = "dp23",
-  fields = c("value", "temperature", "humidity"),
+  fields = "value",
   tags = NULL
 )
 }
@@ -22,7 +22,8 @@ influx_build_query(
 
 \item{bucket}{InfluxDB bucket name.}
 
-\item{fields}{Character vector of field names to filter.}
+\item{fields}{Character vector of field names to filter, or \code{NULL}
+to return all fields.}
 
 \item{tags}{Optional named list of tag filters. Names are tag keys, values
 are character vectors of allowed values. Multiple values for a single tag

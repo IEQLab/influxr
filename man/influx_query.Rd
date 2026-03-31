@@ -14,8 +14,8 @@ influx_query(query, config = influx_config(), tz = "Australia/Sydney")
 \item{tz}{Timezone for the returned \code{datetime} column.}
 }
 \value{
-A tibble with columns: \code{datetime}, \code{house}, \code{parameter},
-\code{device}, \code{value}, \code{value_type}.
+A tibble with columns \code{datetime}, \code{measurement}, \code{field},
+\code{value}, plus any tag columns from the query.
 }
 \description{
 Sends a raw Flux query via the InfluxDB v2 HTTP API and returns the

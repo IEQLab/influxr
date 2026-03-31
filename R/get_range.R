@@ -9,6 +9,8 @@
 #' @param end End time (anything accepted by [influx_parse_time()]).
 #' @param config Connection config from [influx_config()].
 #' @param bucket InfluxDB bucket name.
+#' @param fields Character vector of field names to filter, or `NULL`
+#'   to return all fields. Defaults to `NULL`.
 #' @param tags Optional named list of tag filters. Names are tag keys, values
 #'   are character vectors of allowed values. Multiple values for a single tag
 #'   are OR'd; separate tags are AND'd via separate filter steps.

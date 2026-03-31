@@ -103,8 +103,8 @@ build_tag_filters <- function(tags) {
 #' @param query A Flux query string.
 #' @param config Connection config from [influx_config()].
 #' @param tz Timezone for the returned `datetime` column.
-#' @return A tibble with columns: `datetime`, `house`, `parameter`,
-#'   `device`, `value`, `value_type`.
+#' @return A tibble with columns `datetime`, `measurement`, `field`,
+#'   `value`, plus any tag columns from the query.
 #' @export
 influx_query <- function(query, config = influx_config(),
                          tz = "Australia/Sydney") {
@@ -140,17 +140,16 @@ influx_query <- function(query, config = influx_config(),
   }
 
   # Drop InfluxDB metadata columns
-  drop_cols <- intersect(names(df), c("", "result", "table", "_start", "_stop", "_field"))
+  drop_cols <- intersect(names(df), c("", "result", "table", "_start", "_stop"))
   drop_cols <- c(drop_cols, grep("^\\.{3}\\d+$", names(df), value = TRUE))
   df <- dplyr::select(df, !dplyr::any_of(drop_cols))
 
-  # Rename columns (any_of so missing columns are silently skipped)
+  # Rename InfluxDB internal columns to user-friendly names
   col_map <- c(
-    datetime   = "_time",
-    house      = "source",
-    parameter  = "_measurement",
-    device     = "entity_id",
-    value      = "_value"
+    datetime    = "_time",
+    measurement = "_measurement",
+    field       = "_field",
+    value       = "_value"
   )
   df <- dplyr::rename(df, dplyr::any_of(col_map))
 
@@ -174,6 +173,11 @@ influx_query <- function(query, config = influx_config(),
     }
   )
 
+  # Coerce value to numeric (InfluxDB CSV can return mixed types as character)
+  if ("value" %in% names(df) && !is.numeric(df$value)) {
+    df$value <- suppressWarnings(as.numeric(df$value))
+  }
+
   df
 }
 
@@ -184,8 +188,9 @@ influx_query <- function(query, config = influx_config(),
 #' @noRd
 empty_result <- function(tz) {
   tibble::tibble(
-    datetime   = as.POSIXct(character(), tz = tz),
-    parameter  = character(),
-    value      = numeric()
+    datetime    = as.POSIXct(character(), tz = tz),
+    measurement = character(),
+    field       = character(),
+    value       = numeric()
   )
 }

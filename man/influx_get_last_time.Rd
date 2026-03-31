@@ -24,8 +24,8 @@ influx_get_last_time(
 \item{tz}{Timezone for the returned value.}
 }
 \value{
-A POSIXct of the start of the next day (for files) or
-max datetime + 1 second (for data), or \code{NULL} if no data found.
+A POSIXct of the max datetime + 1 second from the most recent
+file (for files) or data, or \code{NULL} if no data found.
 }
 \description{
 Finds the most recent data point for a measurement, either from saved
