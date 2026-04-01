@@ -72,5 +72,5 @@ influx_get_range <- function(measurements, start, end,
     }
   }
 
-  dplyr::bind_rows(results)
+  safe_bind_rows(results)
 }

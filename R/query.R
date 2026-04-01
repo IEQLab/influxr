@@ -186,6 +186,19 @@ influx_query <- function(query, config = influx_config(),
 #' @param tz Timezone for datetime column.
 #' @return An empty tibble.
 #' @noRd
+safe_bind_rows <- function(dfs) {
+  dfs <- Filter(function(df) nrow(df) > 0, dfs)
+  if (length(dfs) == 0) return(dplyr::bind_rows(dfs))
+  dfs <- lapply(dfs, function(df) {
+    dplyr::mutate(df, dplyr::across(
+      !dplyr::where(~ inherits(.x, "POSIXct")),
+      as.character
+    ))
+  })
+  combined <- dplyr::bind_rows(dfs)
+  suppressMessages(readr::type_convert(combined))
+}
+
 empty_result <- function(tz) {
   tibble::tibble(
     datetime    = as.POSIXct(character(), tz = tz),

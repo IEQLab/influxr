@@ -138,5 +138,5 @@ influx_get_update <- function(measurements,
     results <- c(results, list(df))
   }
 
-  dplyr::bind_rows(results)
+  safe_bind_rows(results)
 }

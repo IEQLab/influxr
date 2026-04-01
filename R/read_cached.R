@@ -39,7 +39,7 @@ influx_read_cached <- function(measurements = NULL,
 
   # Read and combine all matching files
   df <- purrr::map(files, ~ readr::read_csv(.x, show_col_types = FALSE)) |>
-    dplyr::bind_rows()
+    safe_bind_rows()
 
   if (nrow(df) == 0) {
     return(empty_result(tz))
